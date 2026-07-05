@@ -33,10 +33,7 @@ LLM_TIMEOUT=60
 ### 3. 运行
 
 ```bash
-# 快速演示（真实 LLM，4 个场景：计算 / 天气 / 搜索 / 多工具协作）
-python demo_mini_agent.py
-
-# 基础功能测试套件（6 项，真实 LLM）
+# 基础功能测试套件（6 项，真实 LLM：计算 / 搜索 / 天气 / 多工具协作 / 会话 / 无工具直答）
 python test_mini_agent.py
 
 # 全部测试聚合（17 项，含 context / read_docs / 多会话 / 多窗口）
@@ -170,11 +167,12 @@ agent/
 ├── mini_agent_tools.py        # calculator / search / weather / read_docs
 ├── todo_tool.py               # 待办工具（按会话隔离，演示 Memory 隔离）
 ├── my_llm.py                  # LLM 封装（OpenAI 兼容，读 .env）
-├── demo_mini_agent.py         # 快速演示
 ├── run_all_tests.py           # 测试聚合入口
 ├── test_*.py                  # 各项测试
-├── .env                       # LLM 配置（真实 API）
+├── .env                       # LLM 配置（真实 API，未纳入版本库）
+├── .env.example               # 配置模板
 ├── requirements.txt
-├── README_SUBMISSION.md       # 本文档
+├── README_SUBMISSION.md       # 本文档（运行方式/系统设计/Memory 说明）
+├── ARCHITECTURE_QA.md         # 架构设计题解答
 └── AI_PROMPT_LOG.md           # AI Prompt 与问题解决记录
 ```
