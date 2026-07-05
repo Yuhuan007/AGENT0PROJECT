@@ -5,6 +5,30 @@
 
 ---
 
+## 速览（简短版）
+
+**模块一 Context / Performance**
+- 1.1 首 token 压到 2s：Prefix Caching 复用固定前缀 KV-Cache；多模态上传时异步跑 encoder 缓存 embedding；流式占位「正在查看…」让体感等待归零；RAG 只塞 top-k 缩短 prefill。
+- 1.2 200 轮爆了：分层记忆——最近 5-10 轮原文不动 + 较早对话滚动摘要 + 稳定事实结构化存；摘要异步做不卡关键路径，保留指代锚点（实体/数字/未闭环任务）。本项目是基础版（丢弃+占位），升级路径是把丢弃换成摘要。
+
+**模块二 Memory**
+- 2.1 半个月后召回旧问题：写入时抽取事实并配对存 Q-A；召回用多路（语义+关键词+时间衰减）再重排；理想反应体现连续性「你两周前问过，结论是…有变化吗？」。
+- 2.2 经典框架/趋势：MemGPT（LLM 当 OS 换入换出）、斯坦福小镇（记忆流+三因子召回+reflection）、RAG 派、Mem0/Zep。趋势：检索→结构化+反思、读写自主化、短期长期融合。头部（ChatGPT/Claude）特点是透明可控 + 保守召回。
+
+**模块三 Task**
+- 3.1 忘掉目标：goal pinning（便宜）/ todo 清单（结构化）/ reflection（纠偏）/ 分层 Agent（最抗漂移），实践组合用。
+- 3.2 每天 9 点复盘：Cron 触发（带幂等/补偿）→ 检索昨天 session → map-reduce 摘要成日报 → 主动推送 + 写回 memory；任务状态要持久化。
+
+**模块四 Tool / Session Runtime**
+- 4.1 异步工具：调用即返回 task_id + 「已提交」不阻塞；丢队列跑，完成后事件回调注入 session（主动推送或唤醒 Agent）；结果要能关联回原始意图。
+- 4.2 busy 时并发事件：每 session 一个事件队列 + 单 worker 串行消费；用户新消息→可打断（体验最好），异步完成事件→入队空闲再消费；状态机 idle→busy→idle，转换要原子。
+
+**模块五 Runtime 架构对比**
+- 5.1 Claude Code vs OpenAI function calling：OpenAI 派 JSON tool_calls，标准化、生态统一但格式约束死、小模型易崩；Claude 用 XML 标签，对模型自然、容错好、流式友好但非标准。本项目用 `[TOOL_CALL]` 标签正因小模型输出严格 JSON 常崩。
+- 5.2 Openhands 状态机：优点是事件驱动、可回放审计、action/observation 解耦、状态显式；更优雅——分层状态机 + 声明式转换表 + 事件溯源（状态=reduce(事件流)，可时间旅行调试）+ 持久化 + 中断恢复做成一等公民。
+
+---
+
 ## 模块一：Context / Performance
 
 ### 1.1 首轮长窗口 / 多模态输入，first token 慢，如何从 5-10s 压到 2s？
